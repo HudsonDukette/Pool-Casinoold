@@ -2,7 +2,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const basePath = process.env.BASE_PATH ?? "/";
 
 export default defineConfig({
@@ -10,7 +13,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@": "/workspaces/Pool-Casino/artifacts/pool-casino/src",
+      "@": path.resolve(__dirname, "src"),
     },
     dedupe: ["react", "react-dom"],
   },
