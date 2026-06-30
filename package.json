@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
+  "packageManager": "pnpm@10.34.3",
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "prettier": "^3.8.1",
     "typescript": "~5.9.2"
@@ -93,7 +97,10 @@
     }
   },
   "dependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "pg": "8.20.0",
-    "serverless-http": "^4.0.0"
+    "serverless-http": "^4.0.0",
+    "vite": "catalog:"
   }
 }
