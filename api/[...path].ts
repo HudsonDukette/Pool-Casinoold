@@ -1,22 +1,22 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import serverless from "serverless-http";
-import app from "../artifacts/api-server/src/app";
+import serverlessHttp from "serverless-http";
+// Import the pre-built bundle from the api-server dist
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore – built at deploy time by the build command
+import app from "../artifacts/api-server/dist/index.mjs";
 
-// Cache the handler across warm invocations
-const handler = serverless(app, {
-  request(req: any, event: any) {
-    // Preserve the original path so Express sees /api/...
-    req.url = event.url || req.url;
-  },
-});
+let handler: ReturnType<typeof serverlessHttp> | undefined;
 
-export default async function apiHandler(req: VercelRequest, res: VercelResponse) {
-  return handler(req as any, res as any);
+function getHandler() {
+  if (!handler) {
+    handler = serverlessHttp(app);
+  }
+  return handler;
 }
 
-export const config = {
-  api: {
-    bodyParser: false,
-    externalResolver: true,
-  },
-};
+export default async function apiHandler(
+  req: VercelRequest,
+  res: VercelResponse,
+) {
+  return getHandler()(req as any, res as any);
+}
