@@ -16,7 +16,10 @@ async function buildAll() {
   await mkdir(distDir, { recursive: true });
 
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+    entryPoints: {
+      index: path.resolve(artifactDir, "src/index.ts"),
+      app: path.resolve(artifactDir, "src/app.ts"),
+    },
     platform: "node",
     bundle: true,
     format: "esm",

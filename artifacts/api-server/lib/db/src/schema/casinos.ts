@@ -113,3 +113,14 @@ export const casinoGameOddsTable = pgTable("casino_game_odds", {
 });
 
 export type CasinoGameOdds = typeof casinoGameOddsTable.$inferSelect;
+
+export const casinoChatMessagesTable = pgTable("casino_chat_messages", {
+  id: serial("id").primaryKey(),
+  casinoId: integer("casino_id").notNull().references(() => casinosTable.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  username: text("username").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type CasinoChatMessage = typeof casinoChatMessagesTable.$inferSelect;

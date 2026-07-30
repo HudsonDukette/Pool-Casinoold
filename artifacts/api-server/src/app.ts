@@ -5,7 +5,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import router from "./routes";
 import { logger } from "./lib/logger";
-import { pool, hasDatabaseUrl } from "@workspace/db";
+import { checkDatabaseConnection, pool, hasDatabaseUrl } from "@workspace/db";
 
 const PgSession = connectPgSimple(session);
 
@@ -39,9 +39,22 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/healthz", (_req, res) => res.json({ status: "ok" }));
+app.get("/healthz", async (_req, res) => {
+  try {
+    await checkDatabaseConnection();
+    res.json({ status: "ok", database: "connected" });
+  } catch (error) {
+    logger.error({ err: error }, "Database health check failed");
+    res.status(503).json({ status: "error", database: "unavailable" });
+  }
+});
 
 const isProd = process.env.NODE_ENV === "production";
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (isProd && !sessionSecret) {
+  throw new Error("SESSION_SECRET must be configured in production");
+}
 
 const sessionStore = hasDatabaseUrl()
   ? new PgSession({
@@ -56,7 +69,7 @@ const sessionStore = hasDatabaseUrl()
 app.use(
   session({
     store: sessionStore,
-    secret: process.env.SESSION_SECRET ?? "poolcasino-dev-secret-change-in-prod",
+    secret: sessionSecret ?? "poolcasino-dev-secret-change-in-prod",
     resave: false,
     saveUninitialized: false,
     rolling: true,
