@@ -1,10 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm --filter @workspace/pool-casino run build",
-  "outputDirectory": "artifacts/pool-casino/dist/public",
+  "buildCommand": "pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/pool-casino run build",
+  "outputDirectory": "artifacts/pool-casino/dist",
   "installCommand": "pnpm install",
   "framework": null,
+  "functions": {
+    "api/[...path].ts": {
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
