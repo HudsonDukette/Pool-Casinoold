@@ -20,6 +20,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    chunkSizeWarningLimit: 2000,
   },
   server: {
     port: Number(process.env.PORT) || 3000,
