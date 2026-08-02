@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm run build",
+  "buildCommand": "pnpm install && pnpm run build",
   "outputDirectory": "artifacts/pool-casino/dist",
   "installCommand": "pnpm install",
   "framework": null,

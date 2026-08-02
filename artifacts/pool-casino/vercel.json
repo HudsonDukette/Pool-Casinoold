@@ -1,0 +1,3 @@
+{
+  "buildCommand": "echo 'Frontend build handled by root vercel.json'"
+}
