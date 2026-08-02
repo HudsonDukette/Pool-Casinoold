@@ -1,9 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm install && pnpm run build",
-  "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "framework": null,
+  "ignoreCommand": "mv artifacts/pool-casino/index.html artifacts/pool-casino/index.html.bak",
+  "outputDirectory": "dist",
   "functions": {
     "api/[...path].ts": {
       "memory": 1024,
