@@ -3,7 +3,6 @@
   "buildCommand": "pnpm install && pnpm run build",
   "installCommand": "pnpm install",
   "framework": null,
-  "ignoreCommand": "mv artifacts/pool-casino/index.html artifacts/pool-casino/index.html.bak",
   "outputDirectory": "dist",
   "functions": {
     "api/[...path].ts": {
