@@ -2,11 +2,17 @@ import webpush from "web-push";
 import { db, pushSubscriptionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL ?? "mailto:admin@poolcasino.app",
-  process.env.VAPID_PUBLIC_KEY ?? "",
-  process.env.VAPID_PRIVATE_KEY ?? ""
-);
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+const pushEnabled = Boolean(vapidPublicKey && vapidPrivateKey);
+
+if (vapidPublicKey && vapidPrivateKey) {
+  webpush.setVapidDetails(
+    process.env.VAPID_EMAIL ?? "mailto:admin@poolcasino.app",
+    vapidPublicKey,
+    vapidPrivateKey,
+  );
+}
 
 export interface PushPayload {
   title: string;
@@ -16,6 +22,8 @@ export interface PushPayload {
 }
 
 export async function sendPushToUser(userId: number, payload: PushPayload) {
+  if (!pushEnabled) return;
+
   const subs = await db.select().from(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.userId, userId));
   const dead: number[] = [];
 

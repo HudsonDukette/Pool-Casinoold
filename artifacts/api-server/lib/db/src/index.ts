@@ -22,12 +22,7 @@ const cache: DbCache = globalCache.__poolCasinoDbCache__ ?? {
 
 globalCache.__poolCasinoDbCache__ = cache;
 
-const DATABASE_URL_KEYS = [
-  "DATABASE_URL",
-  "NETLIFY_DATABASE_URL",
-  "NEON_DATABASE_URL",
-  "POSTGRES_URL",
-] as const;
+const DATABASE_URL_KEYS = ["DATABASE_URL", "POSTGRES_URL"] as const;
 
 function resolveDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string | undefined {
   for (const key of DATABASE_URL_KEYS) {
@@ -66,7 +61,7 @@ function getConnection(): { pool: pg.Pool; db: DbInstance } {
     Boolean(process.env.VERCEL);
   const defaultPoolMax =
     isServerlessRuntime && (url.includes("neon.tech") || url.includes("pooler"))
-      ? 5
+      ? 3
       : 20;
   const poolMax = Number(process.env.PG_POOL_MAX ?? defaultPoolMax);
 
@@ -110,5 +105,9 @@ export const db = new Proxy({} as DbInstance, {
     return (getConnection().db as any)[prop];
   },
 });
+
+export async function checkDatabaseConnection(): Promise<void> {
+  await getConnection().pool.query("SELECT 1");
+}
 
 export * from "./schema";
