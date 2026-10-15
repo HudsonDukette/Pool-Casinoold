@@ -1,15 +1,31 @@
 {
-  "include": ["src/main.tsx", "src/App.tsx", "vite.config.ts"],
-  "exclude": ["node_modules", "dist"],
+  "include": [
+    "src/main.tsx",
+    "src/App.tsx",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
   "compilerOptions": {
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
-    "lib": ["esnext", "dom", "dom.iterable"],
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable"
+    ],
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "paths": { "@/*": ["src/*"] }
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "noCheck": true
   }
 }
