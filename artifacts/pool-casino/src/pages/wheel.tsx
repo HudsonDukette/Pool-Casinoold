@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -37,11 +36,13 @@ function WheelDisplay({ spinning, rotation }: { spinning: boolean; rotation: num
     <div className="relative w-56 h-56">
       {/* Pointer */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10 text-2xl">▼</div>
-      <motion.svg
+      <svg
         viewBox="0 0 200 200"
         className="w-full h-full"
-        animate={{ rotate: rotation }}
-        transition={spinning ? { duration: 3, ease: "easeOut" } : {}}
+        style={{
+          transform: `rotate(${rotation}deg)`,
+          transition: spinning ? "transform 3s ease-out" : "none",
+        }}
       >
         {SEGMENTS.map((seg, i) => {
           const startAngle = (i * SEGMENT_ANGLE - 90) * (Math.PI / 180);
@@ -79,7 +80,7 @@ function WheelDisplay({ spinning, rotation }: { spinning: boolean; rotation: num
           );
         })}
         <circle cx="100" cy="100" r="10" fill="#0a0a0a" stroke="white" strokeWidth="1.5" />
-      </motion.svg>
+      </svg>
     </div>
   );
 }
@@ -88,7 +89,11 @@ export default function Wheel() {
   const { data: user } = useGetMe({ query: { retry: false } });
   const qc = useQueryClient();
   const { toast } = useToast();
-  const api = useGameApi<WheelResult>();
+  const api = (useGameApi as unknown as () => {
+    call: (game: string, payload: Record<string, unknown>) => Promise<WheelResult | null>;
+    error?: string;
+    loading: boolean;
+  })();
   const casinoId = useCasinoId();
 
   const [betAmount, setBetAmount] = useState("10");
@@ -145,13 +150,8 @@ export default function Wheel() {
         <Card className="bg-black/70 border-white/10">
           <CardContent className="p-8 flex flex-col items-center gap-6 min-h-[360px] justify-center">
             <WheelDisplay spinning={spinning} rotation={rotation} />
-            <AnimatePresence>
               {result && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center"
-                >
+                <div className="text-center">
                   <p className={`text-3xl font-display font-bold ${result.multiplier > 1 ? "text-primary" : result.multiplier === 1 ? "text-yellow-400" : "text-destructive"}`}>
                     {result.segment}
                   </p>
@@ -159,9 +159,8 @@ export default function Wheel() {
                     {result.payout > 0 ? `Payout: ${formatCurrency(result.payout)}` : "No payout"}
                     {" · "}Balance: {formatCurrency(result.newBalance)}
                   </p>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
           </CardContent>
         </Card>
 
