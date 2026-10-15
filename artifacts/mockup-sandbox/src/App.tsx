@@ -1,6 +1,6 @@
 import { useEffect, useState, type ComponentType } from "react";
 
-import { modules as discoveredModules } from "./.generated/mockup-components";
+import { modules as discoveredModules } from "./.generated/mockup-components.js";
 
 type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 
@@ -61,7 +61,6 @@ function PreviewRenderer({
         if (cancelled) {
           return;
         }
-
         const message = e instanceof Error ? e.message : String(e);
         setError(`Failed to load preview.\n${message}`);
       }
@@ -76,7 +75,13 @@ function PreviewRenderer({
 
   if (error) {
     return (
-      <pre style={{ color: "red", padding: "2rem", fontFamily: "system-ui" }}>
+      <pre
+        style={{
+          color: "red",
+          padding: "2rem",
+          fontFamily: "system-ui",
+        }}
+      >
         {error}
       </pre>
     );
