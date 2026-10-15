@@ -10,7 +10,8 @@
   "dependencies": {
     "vite": "^7.3.2",
     "@vitejs/plugin-react": "^5.2.0",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "@supabase/supabase-js": "^2.76.1"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

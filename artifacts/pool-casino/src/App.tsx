@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
 import { MultiplayerProvider } from "@/context/MultiplayerContext";
 import { MatchmakingBar } from "@/components/MatchmakingBar";
+import { SupabaseRealtimeBridge } from "@/components/SupabaseRealtimeBridge";
 import Home from "@/pages/home";
 import Games from "@/pages/games";
 import Roulette from "@/pages/roulette";
@@ -206,6 +207,7 @@ function App() {
   return (
     <AppErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <SupabaseRealtimeBridge />
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <MultiplayerProvider>
