@@ -1,0 +1,41 @@
+name: Repair pnpm lockfile
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/repair-pnpm-lockfile.yml"
+      - "artifacts/pool-casino/package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Regenerate lockfile
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+      - name: Commit updated lockfile
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "pnpm-lock.yaml is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "Fix pnpm lockfile for Supabase dependency"
+          git push
