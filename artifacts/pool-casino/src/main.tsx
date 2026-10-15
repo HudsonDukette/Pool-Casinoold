@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 /// <reference lib="dom" />
+/// <reference path="./alias-modules.d.ts" />
 
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
