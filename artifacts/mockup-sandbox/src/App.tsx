@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { useEffect, useState, type ComponentType } from "react";
 
 import { modules as discoveredModules } from "./.generated/mockup-components.js";
