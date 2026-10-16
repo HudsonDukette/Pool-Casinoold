@@ -1,9 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import serverlessHttp from "serverless-http";
-// Import the pre-built bundle from the api-server dist
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore – built at deploy time by the build command
-import app from "../artifacts/api-server/dist/index.mjs";
+// Import the Express app bundle (the standalone index bundle starts its own HTTP listener).
+import app from "../artifacts/api-server/dist/app.mjs";
 
 let handler: ReturnType<typeof serverlessHttp> | undefined;
 
