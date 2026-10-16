@@ -2,16 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "artifacts/pool-casino/src/*"
-      ]
+      "@/*": ["artifacts/pool-casino/src/*"]
     },
     "isolatedModules": true,
-    "lib": [
-      "es2022",
-      "dom",
-      "dom.iterable"
-    ],
+    "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "react-jsx",
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -31,9 +25,6 @@
     "skipLibCheck": true,
     "target": "es2022",
     "types": [],
-    "customConditions": [
-      "workspace"
-    ],
-    "noCheck": true
+    "customConditions": ["workspace"]
   }
 }
