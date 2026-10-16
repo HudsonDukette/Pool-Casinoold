@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 
 type GameId = "reaction" | "math" | "memory" | "click" | "higher" | "coin";
 type Game = { id: GameId; icon: string; name: string; description: string; color: string };
+type LeaderboardEntry = { player_name: string; game: GameId; score: number; created_at: string };
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 const games: Game[] = [
   { id: "reaction", icon: "⚡", name: "Reaction Rush", description: "Test how fast you can react.", color: "from-cyan-500/20 to-blue-500/5" },
@@ -21,6 +27,9 @@ const makeQuestion = () => {
 
 function App() {
   const [selected, setSelected] = useState<GameId>("reaction");
+  const [playerId, setPlayerId] = useState("");
+  const [dbStatus, setDbStatus] = useState("Connecting to score database…");
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
   const [reaction, setReaction] = useState<"idle" | "waiting" | "ready" | "early">("idle");
@@ -43,7 +52,38 @@ function App() {
   useEffect(() => {
     const saved = Number(localStorage.getItem("pool-arcade-best") || "0");
     setBest(Number.isFinite(saved) ? saved : 0);
+    let id = localStorage.getItem("pool-arcade-player-id");
+    if (!id) {
+      id = typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : "player-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("pool-arcade-player-id", id);
+    }
+    setPlayerId(id);
   }, []);
+
+  async function loadLeaderboard() {
+    if (!supabase) {
+      setDbStatus("Database not configured");
+      return;
+    }
+    const { data, error } = await supabase
+      .from("arcade_scores")
+      .select("player_name, game, score, created_at")
+      .order("score", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(8);
+    if (error) {
+      setDbStatus("Database error: " + error.message);
+      return;
+    }
+    setLeaderboard((data || []) as LeaderboardEntry[]);
+    setDbStatus("Connected · scores sync online");
+  }
+
+  useEffect(() => {
+    if (playerId) void loadLeaderboard();
+  }, [playerId]);
 
   useEffect(() => {
     if (reaction !== "waiting") return;
@@ -62,6 +102,18 @@ function App() {
       localStorage.setItem("pool-arcade-best", String(updated));
       return updated;
     });
+    if (supabase && playerId) {
+      const playerName = "Player-" + playerId.slice(0, 4).toUpperCase();
+      void supabase.from("arcade_scores").insert({
+        player_id: playerId,
+        player_name: playerName,
+        game: selected,
+        score: next,
+      }).then(({ error }) => {
+        if (error) setDbStatus("Database error: " + error.message);
+        else void loadLeaderboard();
+      });
+    }
   }
 
   function chooseGame(id: GameId) {
@@ -227,6 +279,14 @@ function App() {
             {selected === "coin" && <div className="w-full max-w-md"><div className="mx-auto grid h-32 w-32 place-items-center rounded-full border-4 border-amber-200/70 bg-gradient-to-br from-amber-200 to-orange-500 text-4xl font-black text-amber-950 shadow-[0_0_55px_rgba(251,191,36,.12)]">?</div><p className="mt-5 text-slate-300">{coinMessage}</p><div className="mt-4 flex justify-center gap-3"><button onClick={() => callCoin("Heads")} className="rounded-xl bg-amber-200 px-5 py-3 font-bold text-amber-950">Heads</button><button onClick={() => callCoin("Tails")} className="rounded-xl bg-orange-300 px-5 py-3 font-bold text-orange-950">Tails</button></div></div>}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4 text-xs text-slate-500"><span>Points are for fun only and have no monetary value.</span><span>Challenges played this session: {rounds}</span><button onClick={() => { setScore(0); setRounds(0); }} className="rounded-lg border border-white/10 px-3 py-2 text-slate-400 hover:text-white">Reset session score</button></div>
+        </section>
+        <section className="mt-8 rounded-3xl border border-white/10 bg-[#0c111c] p-6 sm:p-8" aria-labelledby="leaderboard-title">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div><p className="text-xs font-bold uppercase tracking-[.22em] text-cyan-300">Community scores</p><h2 id="leaderboard-title" className="mt-1 text-2xl font-extrabold">Arcade leaderboard</h2></div>
+            <span className={"rounded-full border px-3 py-1.5 text-xs " + (dbStatus.startsWith("Connected") ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200" : "border-amber-300/20 bg-amber-300/10 text-amber-200")}>{dbStatus}</span>
+          </div>
+          {leaderboard.length ? <div className="divide-y divide-white/10">{leaderboard.map((entry, index) => <div key={entry.created_at + entry.player_name + index} className="flex items-center gap-4 py-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5 font-bold text-slate-400">{index + 1}</span><div className="min-w-0 flex-1"><p className="truncate font-semibold text-white">{entry.player_name}</p><p className="text-xs capitalize text-slate-500">{games.find(g => g.id === entry.game)?.name || entry.game}</p></div><span className="font-extrabold tabular-nums text-cyan-300">{Number(entry.score).toLocaleString()} pts</span></div>)}</div> : <p className="rounded-2xl border border-dashed border-white/10 px-4 py-8 text-center text-sm text-slate-500">{dbStatus.startsWith("Connected") ? "No scores yet — play a round and claim the first spot." : "Waiting for the database connection to come online…"}</p>}
+          <p className="mt-4 text-xs text-slate-600">Scores are for fun only, have no monetary value, and are stored with a private browser-generated player ID.</p>
         </section>
         <footer className="mt-10 flex flex-col items-center justify-between gap-3 text-center text-xs text-slate-600 sm:flex-row"><span>POOL ARCADE · BUILT FOR PLAY</span><span>No deposits. No wagering. No payouts. Just games.</span></footer>
       </div>
